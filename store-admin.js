@@ -77,6 +77,7 @@
     $('#mclose').onclick = function () { $('#modal').classList.remove('show'); $('#ovl').classList.remove('show'); };
     $('#ovl').onclick = function () { $('#modal').classList.remove('show'); $('#ovl').classList.remove('show'); };
     render();
+    try { DB.syncFromLive(function (changed) { if (changed) render(); }); } catch (e) {}
   }
 
   function myProducts(list) { if (isAdmin()) return list; var vid = vendorId(); return list.filter(function (p) { return (p.vendorId || 'admin') === vid; }); }
@@ -456,9 +457,28 @@
   function vData(v) {
     var raw = localStorage.getItem(DB.KEY) || '';
     var kb = Math.round((raw.length / 1024));
-    v.innerHTML = '<h1 style="font-family:var(--font-h)">Backup & data</h1><div class="stat-grid"><div class="stat"><b>' + kb + ' KB</b><small>Storage used (~5MB limit)</small></div></div>'
+    var myRev = 0; try { myRev = DB.load().rev || 0; } catch (e) {}
+    v.innerHTML = '<h1 style="font-family:var(--font-h)">Backup & data</h1>'
+      + '<div class="form" style="background:#fff;border:1px solid var(--line);border-radius:16px;padding:1.2rem;max-width:640px;margin-bottom:.8rem"><h3 style="font-family:var(--font-h)">Publish to live website</h3><p style="font-size:.78rem;color:var(--muted)">Pushes this browser data to GitHub (<b>data/store.json</b>) so every visitor sees it. Needs one-time server setup (see below). Local rev <b>' + myRev + '</b> • Live rev <b id="liveRev">…</b></p>'
+      + '<label>Publish secret</label><input id="p_sec" type="password" placeholder="PUBLISH_SECRET from Vercel env">'
+      + '<div style="display:flex;gap:.5rem;margin-top:.8rem;flex-wrap:wrap"><button class="btn btn-navy btn-sm" id="ppub">Publish now</button><button class="btn btn-ghost btn-sm" id="pchk">Check live version</button></div><div id="p_stat" style="font-size:.78rem;margin-top:.5rem"></div></div>'
+      + '<div class="stat-grid"><div class="stat"><b>' + kb + ' KB</b><small>Storage used (~5MB limit)</small></div></div>'
       + '<div style="display:flex;gap:.5rem;flex-wrap:wrap"><button class="btn btn-navy btn-sm" id="dexp">Export JSON backup</button><button class="btn btn-ghost btn-sm" id="dimp">Import JSON</button><button class="btn btn-ghost btn-sm" id="dreset">Reset demo data</button><button class="btn btn-ghost btn-sm" id="dwip" style="border-color:#dc2626;color:#dc2626">Delete everything</button></div>'
-      + '<input type="file" id="dfile" accept=".json" style="display:none"><p style="font-size:.78rem;color:var(--muted);margin-top:.8rem">GitHub/Vercel is static hosting — products save per-browser. Workflow: manage here → Export JSON → keep backup in repo. Customers always see your exported defaults on first visit.</p>';
+      + '<input type="file" id="dfile" accept=".json" style="display:none"><p style="font-size:.78rem;color:var(--muted);margin-top:.8rem">One-time server setup: Vercel project → Settings → Environment Variables → add <b>GITHUB_TOKEN</b> (classic token, <b>repo</b> scope), <b>GITHUB_REPO</b> (owner/repo), <b>GITHUB_PATH</b> (repo path of data file, e.g. data/store.json), <b>PUBLISH_SECRET</b> (any strong password) → Redeploy. Then type that secret above and Publish. Last publish wins if two people edit at once.</p>';
+    try { var ps = sessionStorage.getItem('bt_pub') || ''; if (ps) $('#p_sec').value = ps; } catch (e) {}
+    function liveRev() { DB.fetchLive().then(function (live) { var el = $('#liveRev'); if (el) el.textContent = (live.rev || 0); }).catch(function () { var el2 = $('#liveRev'); if (el2) el2.textContent = 'unreachable'; }); }
+    liveRev();
+    $('#pchk').onclick = liveRev;
+    $('#ppub').onclick = function () {
+      var sec = $('#p_sec').value || '';
+      if (!sec) { toast('Enter publish secret'); return; }
+      try { sessionStorage.setItem('bt_pub', sec); } catch (e) {}
+      $('#p_stat').textContent = 'Publishing to GitHub…';
+      DB.publishLive(sec, 'store update from admin').then(function (r) {
+        $('#p_stat').textContent = '✓ Published! Live rev ' + (r.rev || '') + ' — visitors get it on next load.';
+        toast('Published live ✓'); liveRev();
+      }).catch(function (err) { $('#p_stat').textContent = '✕ Publish failed: ' + (err && err.message || err); });
+    };
     $('#dexp').onclick = function () { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([localStorage.getItem(DB.KEY)], { type: 'application/json' })); a.download = 'store-backup.json'; a.click(); };
     $('#dimp').onclick = function () { $('#dfile').click(); };
     $('#dfile').onchange = function (e) { var f = e.target.files[0]; if (!f) return; var r = new FileReader(); r.onload = function () { try { var d = JSON.parse(r.result); if (!d.products || !d.settings || !d.categories) throw 0; if (!Array.isArray(d.vendors)) d.vendors = []; if (!Array.isArray(d.coupons)) d.coupons = []; if (!Array.isArray(d.orders)) d.orders = []; DB.save(d); toast('Imported ✓'); render(); } catch (err) { toast('Invalid backup file'); } }; r.readAsText(f); };

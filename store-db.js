@@ -14,6 +14,8 @@
 
   function seed() {
     return {
+      rev: 1,
+      updatedAt: 'seed',
       settings: {
         storeName: 'Bharat Store',
         tagline: 'Digital + Physical • Trusted by 10,000+ developers',
@@ -72,6 +74,7 @@
       if (typeof d.settings.logo === 'undefined') d.settings.logo = '';
       if (!Array.isArray(d.settings.banners)) d.settings.banners = [];
       if (!Array.isArray(d.vendors)) d.vendors = [];
+      if (typeof d.rev === 'undefined') d.rev = 0;
       if (!Array.isArray(d.coupons)) d.coupons = [];
       if (!Array.isArray(d.orders)) d.orders = [];
       d.categories.forEach(function (c) { if (typeof c.image === 'undefined') c.image = ''; if (typeof c.icon === 'undefined') c.icon = '📦'; });
@@ -114,6 +117,41 @@
     });
   }
 
+  function fetchLive() {
+    return fetch('data/store.json?ts=' + Date.now(), { cache: 'no-store' }).then(function (r) {
+      if (!r.ok) throw new Error('no live data');
+      return r.json();
+    }).then(function (j) {
+      if (!j || !j.settings || !j.products) throw new Error('bad live data');
+      return j;
+    });
+  }
+  // Pull shared copy from GitHub (via repo file). Adopts it if newer. cb(true) = changed.
+  function syncFromLive(cb) {
+    try {
+      fetchLive().then(function (live) {
+        var local = load(), changed = false;
+        if ((live.rev || 0) > (local.rev || 0)) { live.updatedAt = live.updatedAt || new Date().toISOString(); save(live); changed = true; }
+        if (cb) cb(changed, live);
+      }).catch(function () { if (cb) cb(false, null); });
+    } catch (e) { if (cb) cb(false, null); }
+  }
+  // Push local copy to GitHub via /api/publish (Vercel). Needs publish secret.
+  function publishLive(secret, msg) {
+    return fetchLive().catch(function () { return null; }).then(function (live) {
+      var d = load();
+      d.rev = Math.max(d.rev || 0, (live && live.rev) || 0) + 1;
+      d.updatedAt = new Date().toISOString();
+      return fetch('/api/publish', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: d, secret: secret, message: msg || ('store update rev ' + d.rev) })
+      }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); }).then(function (x) {
+        if (!x.ok) throw new Error((x.j && x.j.error) || ('publish failed (' + ')'));
+        save(d);
+        return x.j;
+      });
+    });
+  }
   function uploadToImgbb(file) {
     var key = (load().settings.imgbbKey || '').trim();
     if (!key) return Promise.reject(new Error('no-key'));
@@ -137,5 +175,5 @@
     return v ? v.name : 'Vendor';
   }
 
-  global.StoreDB = { KEY: DB_KEY, load: load, save: save, uid: uid, money: money, waLink: waLink, compressImage: compressImage, uploadToImgbb: uploadToImgbb, catExists: catExists, vendorName: vendorName, seed: seed };
+  global.StoreDB = { KEY: DB_KEY, load: load, save: save, uid: uid, money: money, waLink: waLink, compressImage: compressImage, uploadToImgbb: uploadToImgbb, fetchLive: fetchLive, syncFromLive: syncFromLive, publishLive: publishLive, catExists: catExists, vendorName: vendorName, seed: seed };
 })(window);

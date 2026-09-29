@@ -287,6 +287,7 @@
     $('#fname').textContent = d.settings.storeName; $('#ffoot').textContent = d.settings.tagline + ' • WhatsApp: +' + (d.settings.whatsapp || '');
     if (hideP()) { var so = $('#sort'); if (so) { Array.prototype.slice.call(so.options).forEach(function (o) { if (o.value === 'low' || o.value === 'high') o.remove(); }); } var cp = $('#coupon'); if (cp) cp.style.display = 'none'; var ap = $('#applyCp'); if (ap) ap.style.display = 'none'; }
     renderBanners(); renderCats(); renderGrid(); renderCart(); bindLb();
+    try { DB.syncFromLive(function (changed) { if (changed) { renderBanners(); renderCats(); renderGrid(); renderCart(); } }); } catch (e) {}
     $('#q').addEventListener('input', function (e) { state.q = e.target.value; renderGrid(); });
     $('#sort').addEventListener('change', function (e) { state.sort = e.target.value; renderGrid(); });
     $('#cartBtn').onclick = function () { openDrawer(true); };
