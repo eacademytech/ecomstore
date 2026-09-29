@@ -1,6 +1,6 @@
 {
- "rev": 1,
- "updatedAt": "2026-09-29T00:00:00+00:00",
+ "rev": 6,
+ "updatedAt": "2026-09-29T16:09:29.701Z",
  "settings": {
   "storeName": "Bharat Store",
   "tagline": "Digital + Physical • Trusted by 10,000+ developers",
@@ -30,13 +30,6 @@
    "desc": "Digital downloads + WhatsApp delivery"
   },
   {
-   "id": "c-guides",
-   "name": "Guides & Ebooks",
-   "icon": "📘",
-   "image": "",
-   "desc": "PDF guides on WhatsApp"
-  },
-  {
    "id": "c-gadgets",
    "name": "Gadgets",
    "icon": "🎧",
@@ -49,91 +42,18 @@
    "icon": "🏠",
    "image": "",
    "desc": "Physical, shipped to you"
+  },
+  {
+   "id": "c-mumvg3ds351",
+   "name": "Creams",
+   "icon": "📦",
+   "image": "",
+   "desc": ""
   }
  ],
  "products": [
   {
-   "id": "p-admob",
-   "vendorId": "admin",
-   "vendorName": "Store",
-   "name": "AdMob Ads Pro Extension",
-   "cat": "c-ext",
-   "type": "digital",
-   "price": 1299,
-   "mrp": 1999,
-   "stock": 999,
-   "sku": "DIG-ADMOB",
-   "rating": 4.9,
-   "sold": 1200,
-   "featured": 1,
-   "badge": "BESTSELLER",
-   "desc": "Banner, Interstitial, Rewarded, App Open, Native + AdManager with mediation adapters. Trial .aix included.",
-   "specs": [
-    "SDK v25.4",
-    "1.6 MB",
-    "MIT / Kodular / Niotron"
-   ],
-   "images": [
-    "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'600'%20height%3D'600'%3E%3Cdefs%3E%3ClinearGradient%20id%3D'g'%20x1%3D'0'%20y1%3D'0'%20x2%3D'1'%20y2%3D'1'%3E%3Cstop%20offset%3D'0'%20stop-color%3D'%230a1128'%2F%3E%3Cstop%20offset%3D'1'%20stop-color%3D'%232563eb'%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D'600'%20height%3D'600'%20fill%3D'url(%23g)'%2F%3E%3Ctext%20x%3D'300'%20y%3D'290'%20font-size%3D'150'%20text-anchor%3D'middle'%3E%F0%9F%93%A2%3C%2Ftext%3E%3Ctext%20x%3D'300'%20y%3D'420'%20font-size%3D'34'%20font-family%3D'Arial'%20font-weight%3D'bold'%20fill%3D'white'%20text-anchor%3D'middle'%3EAdMob%20Pro%3C%2Ftext%3E%3C%2Fsvg%3E"
-   ],
-   "link": ""
-  },
-  {
-   "id": "p-billing",
-   "vendorId": "admin",
-   "vendorName": "Store",
-   "name": "Play Billing Extension v9.1",
-   "cat": "c-ext",
-   "type": "digital",
-   "price": 1299,
-   "mrp": 1799,
-   "stock": 999,
-   "sku": "DIG-BILL",
-   "rating": 4.8,
-   "sold": 900,
-   "featured": 1,
-   "badge": "NEW",
-   "desc": "In-app products & subscriptions with Billing Library v9.1. Play compliant.",
-   "specs": [
-    "Billing v9.1",
-    "Subscriptions",
-    "Play compliant"
-   ],
-   "images": [
-    "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'600'%20height%3D'600'%3E%3Cdefs%3E%3ClinearGradient%20id%3D'g'%20x1%3D'0'%20y1%3D'0'%20x2%3D'1'%20y2%3D'1'%3E%3Cstop%20offset%3D'0'%20stop-color%3D'%230b5e2f'%2F%3E%3Cstop%20offset%3D'1'%20stop-color%3D'%2310b981'%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D'600'%20height%3D'600'%20fill%3D'url(%23g)'%2F%3E%3Ctext%20x%3D'300'%20y%3D'290'%20font-size%3D'150'%20text-anchor%3D'middle'%3E%F0%9F%92%B3%3C%2Ftext%3E%3Ctext%20x%3D'300'%20y%3D'420'%20font-size%3D'34'%20font-family%3D'Arial'%20font-weight%3D'bold'%20fill%3D'white'%20text-anchor%3D'middle'%3EBilling%3C%2Ftext%3E%3C%2Fsvg%3E"
-   ],
-   "link": ""
-  },
-  {
-   "id": "p-policy",
-   "vendorId": "admin",
-   "vendorName": "Store",
-   "name": "Play Safety Guide Bundle (PDF)",
-   "cat": "c-guides",
-   "type": "digital",
-   "price": 499,
-   "mrp": 999,
-   "stock": 999,
-   "sku": "DIG-GUIDE",
-   "rating": 4.9,
-   "sold": 2000,
-   "featured": 1,
-   "badge": "",
-   "desc": "6 field manuals: Ads policy, permissions, WebView, billing, checklist. PDF on WhatsApp.",
-   "specs": [
-    "6 PDFs",
-    "Lifetime access",
-    "Free updates"
-   ],
-   "images": [
-    "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'600'%20height%3D'600'%3E%3Cdefs%3E%3ClinearGradient%20id%3D'g'%20x1%3D'0'%20y1%3D'0'%20x2%3D'1'%20y2%3D'1'%3E%3Cstop%20offset%3D'0'%20stop-color%3D'%237c3aed'%2F%3E%3Cstop%20offset%3D'1'%20stop-color%3D'%23ec4899'%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D'600'%20height%3D'600'%20fill%3D'url(%23g)'%2F%3E%3Ctext%20x%3D'300'%20y%3D'290'%20font-size%3D'150'%20text-anchor%3D'middle'%3E%F0%9F%93%98%3C%2Ftext%3E%3Ctext%20x%3D'300'%20y%3D'420'%20font-size%3D'34'%20font-family%3D'Arial'%20font-weight%3D'bold'%20fill%3D'white'%20text-anchor%3D'middle'%3EGuides%3C%2Ftext%3E%3C%2Fsvg%3E"
-   ],
-   "link": ""
-  },
-  {
    "id": "p-buds",
-   "vendorId": "admin",
-   "vendorName": "Store",
    "name": "Wireless Earbuds Pro",
    "cat": "c-gadgets",
    "type": "physical",
@@ -154,12 +74,12 @@
    "images": [
     "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'600'%20height%3D'600'%3E%3Cdefs%3E%3ClinearGradient%20id%3D'g'%20x1%3D'0'%20y1%3D'0'%20x2%3D'1'%20y2%3D'1'%3E%3Cstop%20offset%3D'0'%20stop-color%3D'%230a1128'%2F%3E%3Cstop%20offset%3D'1'%20stop-color%3D'%23c9a227'%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D'600'%20height%3D'600'%20fill%3D'url(%23g)'%2F%3E%3Ctext%20x%3D'300'%20y%3D'290'%20font-size%3D'150'%20text-anchor%3D'middle'%3E%F0%9F%8E%A7%3C%2Ftext%3E%3Ctext%20x%3D'300'%20y%3D'420'%20font-size%3D'34'%20font-family%3D'Arial'%20font-weight%3D'bold'%20fill%3D'white'%20text-anchor%3D'middle'%3EEarbuds%3C%2Ftext%3E%3C%2Fsvg%3E"
    ],
-   "link": ""
+   "link": "",
+   "vendorId": "admin",
+   "vendorName": "Store"
   },
   {
    "id": "p-watch",
-   "vendorId": "admin",
-   "vendorName": "Store",
    "name": "Smart Watch Fit X",
    "cat": "c-gadgets",
    "type": "physical",
@@ -180,12 +100,12 @@
    "images": [
     "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'600'%20height%3D'600'%3E%3Cdefs%3E%3ClinearGradient%20id%3D'g'%20x1%3D'0'%20y1%3D'0'%20x2%3D'1'%20y2%3D'1'%3E%3Cstop%20offset%3D'0'%20stop-color%3D'%232563eb'%2F%3E%3Cstop%20offset%3D'1'%20stop-color%3D'%237c3aed'%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D'600'%20height%3D'600'%20fill%3D'url(%23g)'%2F%3E%3Ctext%20x%3D'300'%20y%3D'290'%20font-size%3D'150'%20text-anchor%3D'middle'%3E%E2%8C%9A%3C%2Ftext%3E%3Ctext%20x%3D'300'%20y%3D'420'%20font-size%3D'34'%20font-family%3D'Arial'%20font-weight%3D'bold'%20fill%3D'white'%20text-anchor%3D'middle'%3EWatch%20X%3C%2Ftext%3E%3C%2Fsvg%3E"
    ],
-   "link": ""
+   "link": "",
+   "vendorId": "admin",
+   "vendorName": "Store"
   },
   {
    "id": "p-lamp",
-   "vendorId": "admin",
-   "vendorName": "Store",
    "name": "LED Desk Lamp",
    "cat": "c-home",
    "type": "physical",
@@ -206,12 +126,12 @@
    "images": [
     "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'600'%20height%3D'600'%3E%3Cdefs%3E%3ClinearGradient%20id%3D'g'%20x1%3D'0'%20y1%3D'0'%20x2%3D'1'%20y2%3D'1'%3E%3Cstop%20offset%3D'0'%20stop-color%3D'%23d97706'%2F%3E%3Cstop%20offset%3D'1'%20stop-color%3D'%230b5e2f'%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D'600'%20height%3D'600'%20fill%3D'url(%23g)'%2F%3E%3Ctext%20x%3D'300'%20y%3D'290'%20font-size%3D'150'%20text-anchor%3D'middle'%3E%F0%9F%92%A1%3C%2Ftext%3E%3Ctext%20x%3D'300'%20y%3D'420'%20font-size%3D'34'%20font-family%3D'Arial'%20font-weight%3D'bold'%20fill%3D'white'%20text-anchor%3D'middle'%3ELamp%3C%2Ftext%3E%3C%2Fsvg%3E"
    ],
-   "link": ""
+   "link": "",
+   "vendorId": "admin",
+   "vendorName": "Store"
   },
   {
    "id": "p-bottle",
-   "vendorId": "admin",
-   "vendorName": "Store",
    "name": "Steel Bottle 1L",
    "cat": "c-home",
    "type": "physical",
@@ -232,12 +152,12 @@
    "images": [
     "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'600'%20height%3D'600'%3E%3Cdefs%3E%3ClinearGradient%20id%3D'g'%20x1%3D'0'%20y1%3D'0'%20x2%3D'1'%20y2%3D'1'%3E%3Cstop%20offset%3D'0'%20stop-color%3D'%230b5e2f'%2F%3E%3Cstop%20offset%3D'1'%20stop-color%3D'%232563eb'%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D'600'%20height%3D'600'%20fill%3D'url(%23g)'%2F%3E%3Ctext%20x%3D'300'%20y%3D'290'%20font-size%3D'150'%20text-anchor%3D'middle'%3E%F0%9F%8D%B6%3C%2Ftext%3E%3Ctext%20x%3D'300'%20y%3D'420'%20font-size%3D'34'%20font-family%3D'Arial'%20font-weight%3D'bold'%20fill%3D'white'%20text-anchor%3D'middle'%3EBottle%201L%3C%2Ftext%3E%3C%2Fsvg%3E"
    ],
-   "link": ""
+   "link": "",
+   "vendorId": "admin",
+   "vendorName": "Store"
   },
   {
    "id": "p-lottie",
-   "vendorId": "admin",
-   "vendorName": "Store",
    "name": "Lottie Animation Pack",
    "cat": "c-ext",
    "type": "digital",
@@ -258,7 +178,9 @@
    "images": [
     "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'600'%20height%3D'600'%3E%3Cdefs%3E%3ClinearGradient%20id%3D'g'%20x1%3D'0'%20y1%3D'0'%20x2%3D'1'%20y2%3D'1'%3E%3Cstop%20offset%3D'0'%20stop-color%3D'%237c3aed'%2F%3E%3Cstop%20offset%3D'1'%20stop-color%3D'%230a1128'%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D'600'%20height%3D'600'%20fill%3D'url(%23g)'%2F%3E%3Ctext%20x%3D'300'%20y%3D'290'%20font-size%3D'150'%20text-anchor%3D'middle'%3E%E2%9C%A8%3C%2Ftext%3E%3Ctext%20x%3D'300'%20y%3D'420'%20font-size%3D'34'%20font-family%3D'Arial'%20font-weight%3D'bold'%20fill%3D'white'%20text-anchor%3D'middle'%3ELottie%3C%2Ftext%3E%3C%2Fsvg%3E"
    ],
-   "link": ""
+   "link": "",
+   "vendorId": "admin",
+   "vendorName": "Store"
   }
  ],
  "coupons": [
