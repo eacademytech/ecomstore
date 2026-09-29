@@ -33,6 +33,7 @@
   }
 
   function login() {
+    try {
     var d = DB.load();
     var uEl = $('#user'), pEl = $('#pass');
     if (!pEl) { toast('Login form not loaded — hard-refresh (Ctrl+Shift+R)'); return; }
@@ -48,6 +49,7 @@
     if (!v.active) { toast('Vendor account disabled'); return; }
     if (v.pass !== pw) { toast('Wrong password'); return; }
     sessionStorage.setItem('bt_role', 'vendor'); sessionStorage.setItem('bt_vendor', v.id); boot();
+    } catch (err) { toast('Login error: ' + (err && err.message || err)); }
   }
 
   function boot() {
@@ -465,7 +467,13 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    wireLogin();
-    if (authed()) boot();
+    try { console.log('store-admin multivendor 2026-09-29'); } catch (e) {}
+    try {
+      wireLogin();
+      if (authed()) boot();
+    } catch (err) {
+      var t = document.getElementById('toast');
+      if (t) { t.textContent = 'Startup error: ' + (err && err.message) + ' — hard-refresh (Ctrl+Shift+R)'; t.classList.add('show'); }
+    }
   });
 })();
