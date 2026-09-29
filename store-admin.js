@@ -24,6 +24,14 @@
   function isAdmin() { return role() === 'admin'; }
   function authed() { return !!role(); }
 
+  function wireLogin() {
+    var li = $('#login'); if (!li || li._wired) return; li._wired = true;
+    var p = $('#pass'), u = $('#user');
+    li.onclick = login;
+    if (p) p.addEventListener('keydown', function (e) { if (e.key === 'Enter') login(); });
+    if (u) u.addEventListener('keydown', function (e) { if (e.key === 'Enter') login(); });
+  }
+
   function login() {
     var d = DB.load();
     var uEl = $('#user'), pEl = $('#pass');
@@ -457,11 +465,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    if (authed()) { boot(); return; }
-    var li = $('#login'), p = $('#pass'), u = $('#user');
-    if (!li || !p) return;
-    li.onclick = login;
-    p.addEventListener('keydown', function (e) { if (e.key === 'Enter') login(); });
-    if (u) u.addEventListener('keydown', function (e) { if (e.key === 'Enter') login(); });
+    wireLogin();
+    if (authed()) boot();
   });
 })();
