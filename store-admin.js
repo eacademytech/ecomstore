@@ -40,6 +40,7 @@
   }
   function doLogin() {
     try {
+    var d = DB.load();
     var uEl = $('#user'), pEl = $('#pass');
     if (!pEl) { toast('Login form not loaded — hard-refresh (Ctrl+Shift+R)'); return; }
     var u = ((uEl && uEl.value) || '').trim().toLowerCase();
