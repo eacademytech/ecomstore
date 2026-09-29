@@ -34,7 +34,12 @@
 
   function login() {
     try {
-    var d = DB.load();
+      toast('Checking…');
+      DB.syncFromLive(function () { doLogin(); });
+    } catch (err) { doLogin(); }
+  }
+  function doLogin() {
+    try {
     var uEl = $('#user'), pEl = $('#pass');
     if (!pEl) { toast('Login form not loaded — hard-refresh (Ctrl+Shift+R)'); return; }
     var u = ((uEl && uEl.value) || '').trim().toLowerCase();
@@ -371,7 +376,7 @@
       var dupe = dd.vendors.some(function (z) { return String(z.user || '').toLowerCase() === un && z.id !== id; });
       if (dupe) { toast('Username already taken'); return; }
       if (id) { var o = dd.vendors.filter(function (z) { return z.id === id; })[0]; o.name = nm; o.user = un; o.pass = pw; o.active = $('#v_act').checked ? 1 : 0; dd.products.forEach(function (p) { if ((p.vendorId || 'admin') === id) p.vendorName = nm; }); }
-      else dd.vendors.push({ id: DB.uid('v'), name: nm, user: un, pass: pw, active: 1 });
+      else dd.vendors.push({ id: DB.uid('v'), name: nm, user: un, pass: pw, active: $('#v_act').checked ? 1 : 0 });
       DB.save(dd); closeM(); render(); toast('Vendor saved ✓');
     };
     $('#modal').classList.add('show'); $('#ovl').classList.add('show');
