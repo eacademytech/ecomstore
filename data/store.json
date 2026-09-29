@@ -1,6 +1,6 @@
 {
- "rev": 12,
- "updatedAt": "2026-09-29T16:51:12.427Z",
+ "rev": 13,
+ "updatedAt": "2026-09-29T16:53:22.127Z",
  "settings": {
   "storeName": "AMGAON A2Z",
   "tagline": "Amgaon Ka Apna E-commerce",
@@ -23,32 +23,11 @@
  },
  "categories": [
   {
-   "id": "c-ext",
-   "name": "Extensions",
-   "icon": "🧩",
-   "image": "",
-   "desc": "Digital downloads + WhatsApp delivery"
-  },
-  {
-   "id": "c-gadgets",
-   "name": "Gadgets",
-   "icon": "🎧",
-   "image": "",
-   "desc": "Physical, shipped to you"
-  },
-  {
    "id": "c-home",
-   "name": "Home Essentials",
-   "icon": "🏠",
+   "name": "Kirana | किराना",
+   "icon": "👌",
    "image": "",
-   "desc": "Physical, shipped to you"
-  },
-  {
-   "id": "c-mumvg3ds351",
-   "name": "Creams",
-   "icon": "📦",
-   "image": "",
-   "desc": ""
+   "desc": "All Kirana (Grocery) Products"
   }
  ],
  "products": [],
