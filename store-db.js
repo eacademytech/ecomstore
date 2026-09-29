@@ -136,10 +136,25 @@
       }).catch(function () { if (cb) cb(false, null); });
     } catch (e) { if (cb) cb(false, null); }
   }
+  // Union-merge two stores by id (publisher copy wins per item; nothing is lost).
+  function byId(list) { var m = {}; (list || []).forEach(function (x) { var k = x.id || x.code; if (k) m[k] = x; }); return m; }
+  function unionList(b, o) { var m = byId(b), mo = byId(o); Object.keys(mo).forEach(function (k) { m[k] = mo[k]; }); return Object.keys(m).map(function (k) { return m[k]; }); }
+  function mergeStores(base, over, preserveSettings) {
+    var out = JSON.parse(JSON.stringify(base));
+    out.products = unionList(base.products, over.products);
+    out.categories = unionList(base.categories, over.categories);
+    out.vendors = unionList(base.vendors, over.vendors);
+    out.coupons = unionList(base.coupons, over.coupons);
+    out.orders = unionList(base.orders, over.orders);
+    out.settings = preserveSettings ? base.settings : over.settings;
+    return out;
+  }
   // Push local copy to GitHub via /api/publish (Vercel). Needs publish secret.
-  function publishLive(secret, msg) {
+  // preserveSettings=true keeps live settings (for vendor publishes).
+  function publishLive(secret, msg, preserveSettings) {
     return fetchLive().catch(function () { return null; }).then(function (live) {
       var d = load();
+      if (live && live.settings) d = mergeStores(live, d, !!preserveSettings);
       d.rev = Math.max(d.rev || 0, (live && live.rev) || 0) + 1;
       d.updatedAt = new Date().toISOString();
       return fetch('/api/publish', {
