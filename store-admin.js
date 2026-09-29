@@ -26,8 +26,10 @@
 
   function login() {
     var d = DB.load();
-    var u = ($('#user').value || '').trim().toLowerCase();
-    var pw = $('#pass').value || '';
+    var uEl = $('#user'), pEl = $('#pass');
+    if (!pEl) { toast('Login form not loaded — hard-refresh (Ctrl+Shift+R)'); return; }
+    var u = ((uEl && uEl.value) || '').trim().toLowerCase();
+    var pw = pEl.value || '';
     if (!u) {
       if (pw === (d.settings.adminPass || 'admin123')) { sessionStorage.setItem('bt_role', 'admin'); sessionStorage.removeItem('bt_vendor'); boot(); }
       else toast('Wrong password');
@@ -41,6 +43,14 @@
   }
 
   function boot() {
+    if (role() === 'vendor') {
+      var chk = DB.load(), me = (chk.vendors || []).filter(function (x) { return x.id === vendorId(); })[0];
+      if (!me || !me.active) {
+        sessionStorage.removeItem('bt_role'); sessionStorage.removeItem('bt_vendor'); sessionStorage.removeItem('bt_admin');
+        var t = $('#toast'); if (t) { t.textContent = 'Vendor account disabled or removed — please log in again'; t.classList.add('show'); setTimeout(function () { t.classList.remove('show'); }, 2500); }
+        return;
+      }
+    }
     $('#lock').style.display = 'none'; $('#app').style.display = 'grid';
     var _s = DB.load().settings;
     $('#aname').textContent = _s.storeName;
@@ -447,7 +457,11 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    if (authed()) boot();
-    else { $('#login').onclick = login; $('#pass').addEventListener('keydown', function (e) { if (e.key === 'Enter') login(); }); var u = $('#user'); if (u) u.addEventListener('keydown', function (e) { if (e.key === 'Enter') login(); }); }
+    if (authed()) { boot(); return; }
+    var li = $('#login'), p = $('#pass'), u = $('#user');
+    if (!li || !p) return;
+    li.onclick = login;
+    p.addEventListener('keydown', function (e) { if (e.key === 'Enter') login(); });
+    if (u) u.addEventListener('keydown', function (e) { if (e.key === 'Enter') login(); });
   });
 })();
