@@ -53,6 +53,7 @@
         + '<img loading="lazy" src="' + img + '" alt="' + esc(p.name) + '"></div>'
         + '<div class="bd"><div class="cat">' + esc(catName(p.cat)) + '</div><h3 data-v="' + p.id + '">' + esc(p.name) + '</h3>'
         + '<div class="stars">★★★★★ <span>' + (p.rating || 4.5) + ' (' + (p.sold || 0) + ')</span></div>'
+        + '<div style="font-size:.66rem;color:var(--muted)">Sold by <b>' + esc(p.vendorName || DB.vendorName(p.vendorId)) + '</b></div>'
         + priceHtml
         + '<div class="row"><button class="btn btn-navy btn-sm" data-add="' + p.id + '"' + (out ? ' disabled' : '') + '>' + (out ? 'Out of stock' : 'Add to Cart') + '</button>'
         + '<button class="btn btn-ghost btn-sm" data-v="' + p.id + '">View</button></div></div></div>';
@@ -129,6 +130,7 @@
       + '<div class="mt"><div class="cat" style="font-size:.62rem;font-weight:800;letter-spacing:1.2px;color:var(--blue)">' + esc(catName(p.cat)) + ' • ' + (p.type === 'digital' ? 'DIGITAL DELIVERY' : 'PHYSICAL SHIPPING') + '</div>'
       + '<h2 style="font-family:var(--font-h);font-size:1.3rem;margin:.3rem 0">' + esc(p.name) + '</h2>'
       + '<div class="stars">★★★★★ <span>' + (p.rating || 4.5) + ' • ' + (p.sold || 0) + ' sold • SKU ' + esc(p.sku || '') + '</span></div>'
+      + '<div style="font-size:.74rem;color:var(--muted)">Sold by <b>' + esc(p.vendorName || DB.vendorName(p.vendorId)) + '</b></div>'
       + priceBlock
       + '<p style="font-size:.84rem;color:var(--muted)">' + esc(p.desc || '') + '</p>'
       + ((p.specs || []).length ? '<div style="margin:.6rem 0">' + p.specs.map(function (s) { return '<span class="pill">✓ ' + esc(s) + '</span>'; }).join(' ') + '</div>' : '')
@@ -223,7 +225,7 @@
   function pushOrder(items, via) {
     var d = DB.load();
     var t = cartTotals();
-    d.orders.unshift({ id: DB.uid('ORD'), date: new Date().toLocaleString('en-IN'), items: items.map(function (x) { var p = prod(x.id) || {}; return { name: p.name || x.id, qty: x.qty, price: p.price || 0 }; }), total: t.total || items.reduce(function (a, x) { var p = prod(x.id) || { price: 0 }; return a + p.price * x.qty; }, 0), via: via, status: 'New', customer: document.getElementById('coName') ? document.getElementById('coName').value : '' });
+    d.orders.unshift({ id: DB.uid('ORD'), date: new Date().toLocaleString('en-IN'), items: items.map(function (x) { var p = prod(x.id) || {}; return { id: x.id, vendorId: p.vendorId || 'admin', name: p.name || x.id, qty: x.qty, price: p.price || 0 }; }), total: t.total || items.reduce(function (a, x) { var p = prod(x.id) || { price: 0 }; return a + p.price * x.qty; }, 0), via: via, status: 'New', customer: document.getElementById('coName') ? document.getElementById('coName').value : '' });
     d.products.forEach(function (p) { var it = items.find(function (x) { return x.id === p.id; }); if (it && p.type === 'physical') p.stock = Math.max(0, Number(p.stock) - it.qty); });
     DB.save(d);
   }

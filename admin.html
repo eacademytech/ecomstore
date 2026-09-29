@@ -10,19 +10,21 @@
 <body>
 <div id="lock" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;background:linear-gradient(135deg,#0a1128,#1c2a63)">
 <div style="background:#fff;border-radius:20px;padding:2rem;max-width:380px;width:100%;text-align:center"><div class="brand-mark" style="margin:0 auto .6rem"><i class="fas fa-lock"></i></div>
-<h2 style="font-family:var(--font-h)">Admin Login</h2><p style="color:var(--muted);font-size:.8rem">Default password: <b>admin123</b> (change in Settings)</p>
-<input id="pass" type="password" class="inp" style="width:100%;margin-top:.8rem" placeholder="Password"><button class="btn btn-navy" id="login" style="width:100%;margin-top:.6rem">Login</button>
-<p><a href="onlinestore.html" style="font-size:.76rem">← Back to store</a></p></div></div>
+<h2 style="font-family:var(--font-h)">Store Login</h2><p style="color:var(--muted);font-size:.8rem">Main admin: password only • Vendor: username + password</p>
+<input id="user" class="inp" style="width:100%;margin-top:.8rem" placeholder="Username (vendors only — leave blank for main admin)" autocomplete="username">
+<input id="pass" type="password" class="inp" style="width:100%;margin-top:.5rem" placeholder="Password" autocomplete="current-password"><button class="btn btn-navy" id="login" style="width:100%;margin-top:.6rem">Login</button>
+<p><a href="index.html" style="font-size:.76rem">← Back to store</a></p></div></div>
 <div id="app" class="adm" style="display:none">
-<nav class="side"><h2>🏪 <span id="aname">Bharat Store</span></h2><div style="font-size:.68rem;letter-spacing:1px;opacity:.7">ADMIN PANEL</div>
+<nav class="side"><h2>🏪 <span id="aname">Bharat Store</span></h2><div style="font-size:.68rem;letter-spacing:1px;opacity:.7" id="roleTag">ADMIN PANEL</div>
 <a data-t="dash" class="on"><i class="fas fa-chart-line"></i> Dashboard</a>
 <a data-t="products"><i class="fas fa-box"></i> Products</a>
 <a data-t="cats"><i class="fas fa-tags"></i> Categories</a>
 <a data-t="orders"><i class="fas fa-receipt"></i> Orders</a>
-<a data-t="coupons"><i class="fas fa-ticket-alt"></i> Coupons</a>
-<a data-t="settings"><i class="fas fa-cog"></i> Settings</a>
-<a data-t="data"><i class="fas fa-database"></i> Backup</a>
-<div style="margin-top:1rem;display:flex;gap:.4rem;flex-wrap:wrap"><a href="onlinestore.html" style="font-size:.74rem">🛒 View store</a><a id="logout" style="font-size:.74rem">Logout</a></div></nav>
+<a data-t="vendors" id="navVendors"><i class="fas fa-store"></i> Vendors</a>
+<a data-t="coupons" id="navCoupons"><i class="fas fa-ticket-alt"></i> Coupons</a>
+<a data-t="settings" id="navSettings"><i class="fas fa-cog"></i> Settings</a>
+<a data-t="data" id="navData"><i class="fas fa-database"></i> Backup</a>
+<div style="margin-top:1rem;display:flex;gap:.4rem;flex-wrap:wrap"><a href="index.html" style="font-size:.74rem">🛒 View store</a><a id="logout" style="font-size:.74rem">Logout</a></div></nav>
 <main class="main"><div id="view"></div></main>
 </div>
 <div class="overlay" id="ovl"></div>

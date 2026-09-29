@@ -52,6 +52,7 @@
         { code: 'WELCOME10', off: 10, min: 0, active: 1 },
         { code: 'SAVE20', off: 20, min: 1999, active: 1 }
       ],
+      vendors: [],
       orders: []
     };
   }
@@ -66,7 +67,16 @@
       if (typeof d.settings.hidePrice === 'undefined') d.settings.hidePrice = 0;
       if (typeof d.settings.logo === 'undefined') d.settings.logo = '';
       if (!Array.isArray(d.settings.banners)) d.settings.banners = [];
+      if (!Array.isArray(d.vendors)) d.vendors = [];
+      if (!Array.isArray(d.coupons)) d.coupons = [];
+      if (!Array.isArray(d.orders)) d.orders = [];
       d.categories.forEach(function (c) { if (typeof c.image === 'undefined') c.image = ''; if (typeof c.icon === 'undefined') c.icon = '📦'; });
+      var vmap = {};
+      d.vendors.forEach(function (v) { vmap[v.id] = v.name; });
+      d.products.forEach(function (p) {
+        if (typeof p.vendorId === 'undefined' || !p.vendorId) p.vendorId = 'admin';
+        if (!p.vendorName) p.vendorName = vmap[p.vendorId] || (p.vendorId === 'admin' ? 'Store' : '');
+      });
       return d;
     } catch (e) { var s2 = seed(); save(s2); return s2; }
   }
@@ -113,5 +123,15 @@
     });
   }
 
-  global.StoreDB = { KEY: DB_KEY, load: load, save: save, uid: uid, money: money, waLink: waLink, compressImage: compressImage, uploadToImgbb: uploadToImgbb, seed: seed };
+  function catExists(name, exceptId) {
+    var d = load(), n = String(name || '').trim().toLowerCase();
+    return d.categories.some(function (c) { return String(c.name || '').trim().toLowerCase() === n && c.id !== exceptId; });
+  }
+  function vendorName(id) {
+    if (!id || id === 'admin') return 'Store';
+    var d = load(), v = d.vendors.filter(function (x) { return x.id === id; })[0];
+    return v ? v.name : 'Vendor';
+  }
+
+  global.StoreDB = { KEY: DB_KEY, load: load, save: save, uid: uid, money: money, waLink: waLink, compressImage: compressImage, uploadToImgbb: uploadToImgbb, catExists: catExists, vendorName: vendorName, seed: seed };
 })(window);
