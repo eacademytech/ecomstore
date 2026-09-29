@@ -28,6 +28,8 @@
         heroSub: 'Extensions, guides, gadgets & essentials — order in 1 tap on WhatsApp. No login needed.',
         adminPass: 'admin123',
         imgbbKey: '',
+        gcsKey: '',
+        gcsCx: '',
         hidePrice: 0,
         logo: '',
         banners: []
@@ -64,6 +66,8 @@
       var d = JSON.parse(raw);
       if (!d.settings || !d.products || !d.categories) throw 0;
       if (typeof d.settings.imgbbKey === 'undefined') d.settings.imgbbKey = '';
+      if (typeof d.settings.gcsKey === 'undefined') d.settings.gcsKey = '';
+      if (typeof d.settings.gcsCx === 'undefined') d.settings.gcsCx = '';
       if (typeof d.settings.hidePrice === 'undefined') d.settings.hidePrice = 0;
       if (typeof d.settings.logo === 'undefined') d.settings.logo = '';
       if (!Array.isArray(d.settings.banners)) d.settings.banners = [];
