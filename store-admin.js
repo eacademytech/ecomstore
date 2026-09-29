@@ -4,6 +4,21 @@
   function $(s) { return document.querySelector(s); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function toast(m) { var t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._x); t._x = setTimeout(function () { t.classList.remove('show'); }, 2200); }
+  /* 3-level image fallback: loremflickr -> picsum -> local SVG (never broken) */
+  function sgSvg(label) {
+    var pal = [['#0a1128', '#2563eb'], ['#0b5e2f', '#10b981'], ['#7c3aed', '#ec4899'], ['#d97706', '#c9a227'], ['#2563eb', '#7c3aed'], ['#ef4444', '#f59e0b']];
+    var hsh = 0; for (var i = 0; i < label.length; i++) hsh = (hsh * 31 + label.charCodeAt(i)) % 997;
+    var c = pal[hsh % pal.length];
+    var init = label.split(/[\s,-]+/).filter(Boolean).map(function (w) { return w[0]; }).join('').slice(0, 2).toUpperCase() || 'P';
+    var svg = "<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='" + c[0] + "'/><stop offset='1' stop-color='" + c[1] + "'/></linearGradient></defs><rect width='400' height='400' fill='url(#g)'/><text x='200' y='215' font-size='110' font-family='Arial' font-weight='bold' fill='white' text-anchor='middle'>" + init + "</text><text x='200' y='280' font-size='26' font-family='Arial' fill='white' text-anchor='middle'>" + esc(label.slice(0, 18)) + "</text></svg>";
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+  window.sgErr = window.sgErr || function (im) {
+    var stage = +(im.getAttribute('data-sg') || 0);
+    var box = im.closest('[data-full]');
+    if (stage === 0) { im.setAttribute('data-sg', '1'); im.src = im.getAttribute('data-fb') || ''; if (box && im.getAttribute('data-fb800')) box.setAttribute('data-full', im.getAttribute('data-fb800')); }
+    else { im.onerror = null; im.src = im.getAttribute('data-svg') || ''; if (box && im.getAttribute('data-svg')) box.setAttribute('data-full', im.getAttribute('data-svg')); }
+  };
   function role() { return sessionStorage.getItem('bt_role') || (sessionStorage.getItem('bt_admin') === '1' ? 'admin' : null); }
   function vendorId() { return sessionStorage.getItem('bt_vendor') || ''; }
   function vendorName() { try { return DB.vendorName(vendorId()); } catch (e) { return ''; } }
@@ -163,7 +178,9 @@
         var L = suggBase + i, seed = slug + '-' + L;
         var full = 'https://loremflickr.com/800/800/' + kw + '?lock=' + L, thumb = 'https://loremflickr.com/200/200/' + kw + '?lock=' + L;
         var fbT = 'https://picsum.photos/seed/' + seed + '/200', fbF = 'https://picsum.photos/seed/' + seed + '/800';
-        h += '<div class="pimg" data-full="' + full + '" title="Click to add"><img loading="lazy" src="' + thumb + '" onerror="this.onerror=null;this.src=\'' + fbT + '\';var p=this.closest(\'[data-full]\');if(p)p.setAttribute(\'data-full\',\'' + fbF + '\')"><button>+ Add</button></div>';
+        var sv = '';
+        try { sv = sgSvg(suggKeys().replace(/,/g, ' ')); } catch (e) { sv = ''; }
+        h += '<div class="pimg" data-full="' + full + '" title="Click to add"><img loading="lazy" src="' + thumb + '" data-fb="' + fbT + '" data-fb800="' + fbF + '" data-svg="' + sv + '" data-sg="0" onerror="sgErr(this)"><button>+ Add</button></div>';
       }
       box.innerHTML = h;
       var m = $('#suggMsg'); if (m) m.textContent = 'Photos for "' + suggKeys().replace(/,/g, ' ') + '"';
