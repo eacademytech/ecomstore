@@ -145,10 +145,16 @@
       return fetch('/api/publish', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ data: d, secret: secret, message: msg || ('store update rev ' + d.rev) })
-      }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); }).then(function (x) {
-        if (!x.ok) throw new Error((x.j && x.j.error) || ('publish failed (' + ')'));
+      }).then(function (r) {
+        return r.text().then(function (t) {
+          var j = null;
+          try { j = JSON.parse(t); } catch (e) { throw new Error('server returned HTTP ' + r.status + ' instead of JSON — /api/publish is not deployed on this site'); }
+          if (!r.ok) throw new Error((j && j.error) || ('publish failed (' + r.status + ')'));
+          return j;
+        });
+      }).then(function (j) {
         save(d);
-        return x.j;
+        return j;
       });
     });
   }
