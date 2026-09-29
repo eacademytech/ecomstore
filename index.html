@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bharat Store — Online Store</title>
+<meta name="description" content="Bharat Store — digital + physical products. Order in 1 tap on WhatsApp.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="store.css">
+</head>
+<body>
+<div class="topbar" id="announce"></div>
+<header class="site"><div class="wrap nav">
+<a href="onlinestore.html" class="brand"><div class="brand-mark" id="logoBox"><i class="fas fa-store"></i></div><div class="brand-name"><span id="sname">Bharat Store</span><small id="stag">ONLINE STORE</small></div></a>
+<div class="search"><i class="fas fa-search" style="color:#5b657f"></i><input id="q" placeholder="Search products, SKU…"></div>
+<a class="hbtn" id="wishBtn" title="Wishlist">♡<span class="n" id="wishN">0</span></a>
+<a class="hbtn" id="cartBtn" title="Cart"><i class="fas fa-shopping-cart"></i><span class="n" id="cartN">0</span></a>
+<a class="btn btn-navy btn-sm" href="admin.html">Admin</a>
+</div></header>
+<div class="wrap">
+<div id="bannerBox"></div>
+<section id="shop" class="sec">
+<div class="chips" id="chips"></div>
+<div class="toolbar"><select id="sort"><option value="featured">Sort: Featured</option><option value="low">Price: Low → High</option><option value="high">Price: High → Low</option><option value="rating">Top rated</option><option value="new">Newest</option></select><span class="pill" id="count"></span><span class="pill">🚚 COD + UPI + WhatsApp support</span></div>
+<div class="grid" id="grid"></div>
+</section>
+</div>
+<footer class="site"><div class="wrap"><div class="foot-grid">
+<div><h4 id="fname">Bharat Store</h4><p id="ffoot" style="font-size:.78rem"></p><p style="font-size:.72rem;margin-top:.5rem">Static store • No login • Pay on WhatsApp / UPI</p></div>
+<div><h4>SHOP</h4><a href="#shop">All products</a><a href="admin.html">Admin panel</a><a href="index.html">Main website</a></div>
+<div><h4>HELP</h4><a href="#" onclick="alert('WhatsApp us for tracking, returns & support.');return false">Track order</a><a href="#" onclick="alert('Digital: instant on WhatsApp. Physical: 3-6 days.');return false">Shipping info</a></div>
+</div><div style="text-align:center;font-size:.72rem;border-top:1px solid rgba(255,255,255,.1);padding-top:1rem">© <span id="yr"></span> Bharat Store • Powered by Bharat Technologies</div></div></footer>
+<div class="overlay" id="ovl"></div>
+<aside class="drawer" id="drawer"><div class="dhead"><b style="font-family:var(--font-h)">Your Cart</b><button class="hbtn" id="closeD">✕</button></div>
+<div class="ditems" id="citems"></div>
+<div class="dfoot"><div class="form" style="margin-bottom:.6rem"><div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><input id="coName" placeholder="Your name *"><input id="coPhone" placeholder="Phone / WhatsApp *"></div><input id="coAddr" style="margin-top:.5rem" placeholder="Full address (needed for physical items)"><input id="coNote" style="margin-top:.5rem" placeholder="Note (optional)"><div style="display:flex;gap:.5rem;margin-top:.5rem"><input id="coupon" placeholder="Coupon code"><button class="btn btn-ghost btn-sm" id="applyCp">Apply</button></div></div><div id="ctotal"></div><button class="btn btn-green" id="checkout" style="width:100%"><i class="fab fa-whatsapp"></i> Checkout on WhatsApp</button></div></aside>
+<div class="modal" id="modal"><div class="mbox"><div style="grid-column:1/-1;text-align:right;padding:.6rem .8rem 0"><button class="hbtn" id="mclose">✕</button></div><div id="mbody" style="display:contents"></div></div></div>
+<div class="lightbox" id="lightbox"><button class="lb-x" id="lbClose">✕</button><button class="lb-arrow l" id="lbPrev">‹</button><div class="lb-stage" id="lbStage"><img id="lbImg" alt="product image" draggable="false"></div><button class="lb-arrow r" id="lbNext">›</button><div class="lb-bar"><span id="lbCount"></span><span class="lb-tools"><button id="lbMinus" title="Zoom out">−</button><button id="lbPlus" title="Zoom in">+</button><button id="lbReset" title="Reset">⟲</button></span><span class="lb-hint">scroll / pinch to zoom • drag to pan • double-tap to zoom</span></div></div>
+<div class="toast" id="toast"></div>
+<script src="store-db.js"></script>
+<script src="store-front.js"></script>
+</body>
+</html>

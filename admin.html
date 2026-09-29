@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Store Admin — Bharat Store</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="store.css">
+</head>
+<body>
+<div id="lock" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;background:linear-gradient(135deg,#0a1128,#1c2a63)">
+<div style="background:#fff;border-radius:20px;padding:2rem;max-width:380px;width:100%;text-align:center"><div class="brand-mark" style="margin:0 auto .6rem"><i class="fas fa-lock"></i></div>
+<h2 style="font-family:var(--font-h)">Admin Login</h2><p style="color:var(--muted);font-size:.8rem">Default password: <b>admin123</b> (change in Settings)</p>
+<input id="pass" type="password" class="inp" style="width:100%;margin-top:.8rem" placeholder="Password"><button class="btn btn-navy" id="login" style="width:100%;margin-top:.6rem">Login</button>
+<p><a href="onlinestore.html" style="font-size:.76rem">← Back to store</a></p></div></div>
+<div id="app" class="adm" style="display:none">
+<nav class="side"><h2>🏪 <span id="aname">Bharat Store</span></h2><div style="font-size:.68rem;letter-spacing:1px;opacity:.7">ADMIN PANEL</div>
+<a data-t="dash" class="on"><i class="fas fa-chart-line"></i> Dashboard</a>
+<a data-t="products"><i class="fas fa-box"></i> Products</a>
+<a data-t="cats"><i class="fas fa-tags"></i> Categories</a>
+<a data-t="orders"><i class="fas fa-receipt"></i> Orders</a>
+<a data-t="coupons"><i class="fas fa-ticket-alt"></i> Coupons</a>
+<a data-t="settings"><i class="fas fa-cog"></i> Settings</a>
+<a data-t="data"><i class="fas fa-database"></i> Backup</a>
+<div style="margin-top:1rem;display:flex;gap:.4rem;flex-wrap:wrap"><a href="onlinestore.html" style="font-size:.74rem">🛒 View store</a><a id="logout" style="font-size:.74rem">Logout</a></div></nav>
+<main class="main"><div id="view"></div></main>
+</div>
+<div class="overlay" id="ovl"></div>
+<div class="modal" id="modal"><div class="mbox" style="grid-template-columns:1fr"><div style="text-align:right;padding:.6rem .8rem 0"><button class="hbtn" id="mclose">✕</button></div><div id="mbody" class="form" style="padding:0 1.4rem 1.4rem"></div></div></div>
+<div class="toast" id="toast"></div>
+<script src="store-db.js"></script>
+<script src="store-admin.js"></script>
+</body>
+</html>
