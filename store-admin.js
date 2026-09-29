@@ -470,7 +470,7 @@
     liveRev();
     $('#pchk').onclick = liveRev;
     $('#ppub').onclick = function () {
-      var sec = $('#p_sec').value || '';
+      var sec = ($('#p_sec').value || '').trim();
       if (!sec) { toast('Enter publish secret'); return; }
       try { sessionStorage.setItem('bt_pub', sec); } catch (e) {}
       $('#p_stat').textContent = 'Publishing to GitHub…';
