@@ -14,10 +14,9 @@
     return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
   }
   window.sgErr = window.sgErr || function (im) {
-    var stage = +(im.getAttribute('data-sg') || 0);
-    var box = im.closest('[data-full]');
-    if (stage === 0) { im.setAttribute('data-sg', '1'); im.src = im.getAttribute('data-fb') || ''; if (box && im.getAttribute('data-fb800')) box.setAttribute('data-full', im.getAttribute('data-fb800')); }
-    else { im.onerror = null; im.src = im.getAttribute('data-svg') || ''; if (box && im.getAttribute('data-svg')) box.setAttribute('data-full', im.getAttribute('data-svg')); }
+    im.onerror = null;
+    var sv = im.getAttribute('data-svg');
+    if (sv) { im.src = sv; var box = im.closest('[data-full]'); if (box) box.setAttribute('data-full', sv); }
   };
   function role() { return sessionStorage.getItem('bt_role') || (sessionStorage.getItem('bt_admin') === '1' ? 'admin' : null); }
   function vendorId() { return sessionStorage.getItem('bt_vendor') || ''; }
@@ -150,7 +149,7 @@
     editId = id; tmpImgs = (p.images || []).slice();
     $('#mbody').innerHTML = '<h2 style="font-family:var(--font-h)">' + (id ? 'Edit' : 'Add') + ' product</h2>'
       + '<label>Name *</label><input id="f_name" value="' + esc(p.name) + '">'
-      + '<label>Suggested images (based on name — click to add, or upload your own below)</label><div class="pgrid" id="sugg" style="grid-template-columns:repeat(3,1fr)"></div><div style="display:flex;gap:.5rem;align-items:center;margin-top:.4rem"><small id="suggMsg" style="color:var(--muted)"></small><button class="btn btn-ghost btn-sm" id="suggRef" type="button">↻ More</button></div><small style="color:var(--muted)">Free web photos for preview — verify usage rights before commercial use.</small>'
+      + '<label>Suggested images (based on name — click to add, or upload your own below)</label><div class="pgrid" id="sugg" style="grid-template-columns:repeat(3,1fr)"></div><div style="display:flex;gap:.5rem;align-items:center;margin-top:.4rem"><small id="suggMsg" style="color:var(--muted)"></small><button class="btn btn-ghost btn-sm" id="suggRef" type="button">↻ More</button></div><small style="color:var(--muted)">Photos: Wikimedia Commons (free licences) — check each image's licence before commercial use.</small>'
       + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem"><div><label>Category</label><select id="f_cat">' + d.categories.map(function (c) { return '<option value="' + c.id + '"' + (p.cat === c.id ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('') + '</select></div><div><label>Type</label><select id="f_type"><option value="physical"' + (p.type === 'physical' ? ' selected' : '') + '>Physical (ships)</option><option value="digital"' + (p.type === 'digital' ? ' selected' : '') + '>Digital (WhatsApp delivery)</option></select></div></div>'
       + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem"><div><label>Price ₹ *</label><input id="f_price" type="number" value="' + p.price + '"></div><div><label>MRP ₹</label><input id="f_mrp" type="number" value="' + (p.mrp || '') + '"></div><div><label>Stock</label><input id="f_stock" type="number" value="' + p.stock + '"></div></div>'
       + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem"><div><label>SKU</label><input id="f_sku" value="' + esc(p.sku || '') + '"></div><div><label>Rating</label><input id="f_rate" type="number" step="0.1" min="1" max="5" value="' + (p.rating || 4.5) + '"></div><div><label>Badge</label><select id="f_badge"><option value="">—</option>' + ['NEW', 'SALE', 'BESTSELLER', 'HOT'].map(function (b) { return '<option' + (p.badge === b ? ' selected' : '') + '>' + b + '</option>'; }).join('') + '</select></div></div>'
@@ -162,7 +161,7 @@
       + '<div style="display:flex;gap:.5rem;margin-top:1rem"><button class="btn btn-navy" id="fsave">Save product</button><button class="btn btn-ghost" id="fcancel">Cancel</button></div>'
       + '<p style="font-size:.72rem;color:var(--muted);margin-top:.5rem" id="upnote"></p><div style="display:flex;gap:.5rem"><input id="f_url" class="inp" placeholder="Paste image URL + Add" style="flex:1"><button class="btn btn-ghost btn-sm" id="f_addurl">Add</button></div>';
     drawImgs();
-    var suggBase = 0, suggT = null;
+    var suggOffset = 0, suggT = null;
     function suggKeys() {
       var stop = { the: 1, a: 1, an: 1, for: 1, with: 1, and: 1, of: 1, pack: 1, set: 1, new: 1, pro: 1, plus: 1, mini: 1 };
       var words = ($('#f_name').value || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(function (w) { return w.length > 2 && !stop[w]; }).slice(0, 2);
@@ -170,25 +169,84 @@
       if (!words.length) words = ['product'];
       return words.join(',');
     }
+    function gcsConfigured() { try { var s = DB.load().settings; return !!((s.gcsKey || '').trim() && (s.gcsCx || '').trim()); } catch (e) { return false; } }
+    function fetchGoogle(q, off) {
+      var s = DB.load().settings;
+      var url = 'https://www.googleapis.com/customsearch/v1?key=' + encodeURIComponent((s.gcsKey || '').trim()) + '&cx=' + encodeURIComponent((s.gcsCx || '').trim()) + '&q=' + encodeURIComponent(q) + '&searchType=image&num=8&start=' + (off + 1) + '&imgSize=large&safe=active';
+      return fetch(url).then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error((j && j.error && j.error.message) || ('Google error ' + r.status)); return j; }); }).then(function (j) {
+        var list = [];
+        (j.items || []).forEach(function (it) {
+          var full = it.link, thumb = (it.image && it.image.thumbnailLink) || it.link;
+          if (full && /\.(jpe?g|png|webp|gif)(\?|$)/i.test(full)) list.push({ thumb: thumb, full: full, title: it.title || q });
+        });
+        return list;
+      });
+    }
+    function searchAll(q, off, triedGoogle) {
+      var useG = gcsConfigured() && !triedGoogle;
+      return (useG ? fetchGoogle(q, off) : fetchCommons(q, off)).catch(function (e) {
+        if (useG) return fetchCommons(q, off);
+        throw e;
+      });
+    }
+    function fetchCommons(q, off) {
+      var url = 'https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=8&gsroffset=' + off + '&gsrsearch=' + encodeURIComponent(q + ' filetype:bitmap') + '&prop=imageinfo&iiprop=url|size&iiurlwidth=800';
+      return fetch(url).then(function (r) { return r.json(); }).then(function (j) {
+        var pages = (j && j.query && j.query.pages) ? Object.keys(j.query.pages).map(function (k) { return j.query.pages[k]; }) : [];
+        var list = [];
+        pages.forEach(function (pg) {
+          var ii = pg.imageinfo && pg.imageinfo[0];
+          if (ii && ii.thumburl) list.push({ thumb: ii.thumburl, full: ii.thumburl, title: String(pg.title || '').replace(/^File:/, '') });
+        });
+        return list;
+      });
+    }
+    function commonsTiles(list) {
+      var box = $('#sugg'); if (!box) return;
+      box.innerHTML = list.map(function (t) {
+        return '<div class="pimg" data-full="' + t.full + '" title="' + esc(t.title || 'Click to add') + '"><img loading="lazy" src="' + t.thumb + '" data-svg="' + t.svg + '" onerror="sgErr(this)"><button>+ Add</button></div>';
+      }).join('');
+      box.querySelectorAll('[data-full]').forEach(function (el) { el.onclick = function () { tmpImgs.push(el.getAttribute('data-full')); drawImgs(); toast('Photo added ✓ (★ for cover)'); }; });
+    }
+    function svgTiles(words) {
+      var sv = '';
+      try { sv = sgSvg(words); } catch (e) { sv = ''; }
+      return [{ thumb: sv, full: sv, svg: sv, title: words }];
+    }
     function drawSugg() {
       var box = $('#sugg'); if (!box) return;
-      if ((($('#f_name').value || '').trim().length) < 3) { box.innerHTML = '<small style="color:var(--muted)">Type at least 3 letters of the product name…</small>'; var m0 = $('#suggMsg'); if (m0) m0.textContent = ''; return; }
-      var kwRaw = suggKeys().split(','), kw = kwRaw.map(function (w) { return encodeURIComponent(w); }).join(','), slug = kwRaw.join('-').replace(/[^a-z0-9-]/g, '') || 'product', h = '';
-      for (var i = 1; i <= 6; i++) {
-        var L = suggBase + i, seed = slug + '-' + L;
-        var full = 'https://loremflickr.com/800/800/' + kw + '?lock=' + L, thumb = 'https://loremflickr.com/200/200/' + kw + '?lock=' + L;
-        var fbT = 'https://picsum.photos/seed/' + seed + '/200', fbF = 'https://picsum.photos/seed/' + seed + '/800';
-        var sv = '';
-        try { sv = sgSvg(suggKeys().replace(/,/g, ' ')); } catch (e) { sv = ''; }
-        h += '<div class="pimg" data-full="' + full + '" title="Click to add"><img loading="lazy" src="' + thumb + '" data-fb="' + fbT + '" data-fb800="' + fbF + '" data-svg="' + sv + '" data-sg="0" onerror="sgErr(this)"><button>+ Add</button></div>';
-      }
-      box.innerHTML = h;
-      var m = $('#suggMsg'); if (m) m.textContent = 'Photos for "' + suggKeys().replace(/,/g, ' ') + '"';
-      box.querySelectorAll('[data-full]').forEach(function (el) { el.onclick = function () { tmpImgs.push(el.getAttribute('data-full')); drawImgs(); toast('Suggestion added ✓ (★ for cover)'); }; });
+      var nm = ($('#f_name').value || '').trim(), m = $('#suggMsg');
+      if (nm.length < 3) { box.innerHTML = '<small style="color:var(--muted)">Type at least 3 letters of the product name…</small>'; if (m) m.textContent = ''; return; }
+      box.innerHTML = '<small style="color:var(--muted)">Searching free photos for "' + esc(nm) + '"…</small>';
+      if (m) m.textContent = gcsConfigured() ? 'Google Images • via your API key' : 'Wikimedia Commons • free licences';
+      var want = nm, off = suggOffset;
+      searchAll(nm, off, false).then(function (list) {
+        if ((($('#f_name').value || '').trim()) !== want) return null;
+        if (!list.length && off === 0) {
+          var kw = suggKeys().replace(/,/g, ' ');
+          if (kw && kw.toLowerCase() !== want.toLowerCase()) return searchAll(kw, 0, false);
+        }
+        return list;
+      }).then(function (list) {
+        if (!list) return;
+        if ((($('#f_name').value || '').trim()) !== want) return;
+        if (!list.length) {
+          var m2 = $('#suggMsg'); if (m2) m2.textContent = 'No free photos found — try simpler words or upload your own';
+          var w = want.split(/\s+/).slice(0, 2).join(' ');
+          commonsTiles(svgTiles(w));
+          return;
+        }
+        list.forEach(function (t) { try { t.svg = sgSvg(want.split(/\s+/).slice(0, 2).join(' ')); } catch (e) { t.svg = ''; } });
+        commonsTiles(list);
+      }).catch(function () {
+        if ((($('#f_name').value || '').trim()) !== want) return;
+        var m3 = $('#suggMsg'); if (m3) m3.textContent = 'Photo search offline — upload your own or use a placeholder';
+        commonsTiles(svgTiles(want.split(/\s+/).slice(0, 2).join(' ')));
+      });
     }
-    $('#f_name').oninput = function () { clearTimeout(suggT); suggT = setTimeout(drawSugg, 500); };
-    $('#suggRef').onclick = function () { suggBase += 6; drawSugg(); };
-    $('#f_cat').onchange = function () { drawSugg(); };
+    $('#f_name').oninput = function () { clearTimeout(suggT); suggT = setTimeout(function () { suggOffset = 0; drawSugg(); }, 500); };
+    $('#suggRef').onclick = function () { suggOffset += 8; drawSugg(); };
+    $('#f_cat').onchange = function () { suggOffset = 0; drawSugg(); };
     drawSugg();
     $('#upnote').textContent = DB.load().settings.imgbbKey ? '✓ imgbb connected — uploads go to imgbb URL (no browser storage used).' : 'No imgbb key — uploads stored as compressed base64 in browser. Add imgbb key in Settings for URL hosting.';
     $('#f_imgs').onchange = function (e) {
@@ -323,6 +381,7 @@
       + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem"><div><label>Free shipping above ₹</label><input id="s_fs" type="number" value="' + s.freeShipAbove + '"></div><div><label>Flat shipping ₹</label><input id="s_sh" type="number" value="' + s.flatShip + '"></div></div>'
       + '<label>Announcement bar</label><input id="s_ann" value="' + esc(s.announcement || '') + '"><label>Hero title</label><input id="s_ht" value="' + esc(s.heroTitle || '') + '"><label>Hero subtitle</label><textarea id="s_hs">' + esc(s.heroSub || '') + '</textarea>'
       + '<label>imgbb API key (for image URL uploads — get free at imgbb.com)</label><input id="s_img" placeholder="e.g. 3f8a9c…" value="' + esc(s.imgbbKey || '') + '"><div style="font-size:.72rem;color:var(--muted)">With key: category + product uploads go to imgbb (permanent URLs, no storage limit). Without key: compressed base64 in browser (~5MB limit).</div>'
+      + '<label>Google Images API (optional — direct Google results, 100 free searches/day)</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem"><div><input id="s_gk" placeholder="API key" value="' + esc(s.gcsKey || '') + '"></div><div><input id="s_cx" placeholder="Search engine ID (CX)" value="' + esc(s.gcsCx || '') + '"></div></div><div style="font-size:.72rem;color:var(--muted)">Get both free: <b>console.cloud.google.com</b> → enable Custom Search API → key; then <b>programmablesearchengine.com</b> → new engine → “Search the entire web” ON → copy ID. Leave blank to use Wikimedia Commons instead.</div><div style="display:flex;gap:.5rem;align-items:center;margin-top:.4rem"><button class="btn btn-ghost btn-sm" id="gtest" type="button">Test Google</button><span id="gtestR" style="font-size:.74rem"></span></div>'
       + '<label>Admin password</label><input id="s_adm" value="' + esc(s.adminPass || 'admin123') + '">'
       + '<label style="display:flex;gap:9px;align-items:flex-start;background:#faf9f2;border:1px solid var(--line2);border-radius:12px;padding:.7rem .8rem;margin-top:.8rem;cursor:pointer"><input type="checkbox" id="s_hide" ' + (s.hidePrice ? 'checked' : '') + ' style="width:18px;height:18px;margin-top:2px;accent-color:#0a1128"><span><b>Hide prices on store</b><br><small style="color:var(--muted)">Cards, quick-view, cart & checkout show “Price on request”. Customers enquire on WhatsApp. Admin still sees prices here.</small></span></label>'
       + '<div style="display:flex;gap:.5rem;margin-top:1rem"><button class="btn btn-navy" id="ssave">Save settings</button><button class="btn btn-ghost" id="stest">Test imgbb key</button></div><div id="stestR" style="font-size:.76rem;margin-top:.4rem"></div></div>';
@@ -351,6 +410,14 @@
       job.then(function (u) { tmpBanners.push({ img: u, link: '' }); $('#b_stat').textContent = 'Banner added ✓ (save settings)'; drawBanners(); }).catch(function (err) { $('#b_stat').textContent = 'Upload failed: ' + (err && err.message || err); });
     };
     $('#s_logoRm').onclick = function () { $('#s_logo').value = ''; $('#s_logoPrev').style.display = 'none'; };
+    $('#gtest').onclick = function () {
+      var k = $('#s_gk').value.trim(), cx = $('#s_cx').value.trim();
+      if (!k || !cx) { $('#gtestR').textContent = 'Enter API key + CX first.'; return; }
+      $('#gtestR').textContent = 'Testing…';
+      fetch('https://www.googleapis.com/customsearch/v1?key=' + encodeURIComponent(k) + '&cx=' + encodeURIComponent(cx) + '&q=apple&searchType=image&num=1').then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); }).then(function (x) {
+        $('#gtestR').textContent = (x.ok && x.j.items && x.j.items.length) ? '✓ Google connected — image search works.' : '✕ Google error: ' + ((x.j.error && x.j.error.message) || 'no results — check key, CX & billing/quota');
+      }).catch(function (e) { $('#gtestR').textContent = '✕ Test failed: ' + e.message; });
+    };
     $('#s_logo').oninput = function (e) { var u = e.target.value.trim(); if (u) { $('#s_logoPrev').src = u; $('#s_logoPrev').style.display = 'block'; } else $('#s_logoPrev').style.display = 'none'; };
     $('#s_logoFile').onchange = function (e) {
       var f = (e.target.files || [])[0]; if (!f) return;
@@ -361,7 +428,7 @@
     };
     $('#ssave').onclick = function () {
       var dd = DB.load();
-      dd.settings = { storeName: $('#s_name').value.trim() || 'Bharat Store', tagline: $('#s_tag').value, logo: $('#s_logo').value.trim(), banners: tmpBanners.filter(function (b) { return b && b.img; }), whatsapp: $('#s_wa').value.replace(/\D/g, ''), currency: $('#s_cur').value || '₹', upi: $('#s_upi').value, paypal: $('#s_pp').value, freeShipAbove: +$('#s_fs').value || 999, flatShip: +$('#s_sh').value || 0, announcement: $('#s_ann').value, heroTitle: $('#s_ht').value, heroSub: $('#s_hs').value, imgbbKey: $('#s_img').value.trim(), hidePrice: $('#s_hide').checked ? 1 : 0, adminPass: $('#s_adm').value || 'admin123' };
+      dd.settings = { storeName: $('#s_name').value.trim() || 'Bharat Store', tagline: $('#s_tag').value, logo: $('#s_logo').value.trim(), banners: tmpBanners.filter(function (b) { return b && b.img; }), whatsapp: $('#s_wa').value.replace(/\D/g, ''), currency: $('#s_cur').value || '₹', upi: $('#s_upi').value, paypal: $('#s_pp').value, freeShipAbove: +$('#s_fs').value || 999, flatShip: +$('#s_sh').value || 0, announcement: $('#s_ann').value, heroTitle: $('#s_ht').value, heroSub: $('#s_hs').value, imgbbKey: $('#s_img').value.trim(), gcsKey: $('#s_gk').value.trim(), gcsCx: $('#s_cx').value.trim(), hidePrice: $('#s_hide').checked ? 1 : 0, adminPass: $('#s_adm').value || 'admin123' };
       DB.save(dd); $('#aname').textContent = dd.settings.storeName; toast('Settings saved ✓');
     };
   }
