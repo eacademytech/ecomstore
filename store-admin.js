@@ -135,6 +135,7 @@
     editId = id; tmpImgs = (p.images || []).slice();
     $('#mbody').innerHTML = '<h2 style="font-family:var(--font-h)">' + (id ? 'Edit' : 'Add') + ' product</h2>'
       + '<label>Name *</label><input id="f_name" value="' + esc(p.name) + '">'
+      + '<label>Suggested images (based on name — click to add, or upload your own below)</label><div class="pgrid" id="sugg" style="grid-template-columns:repeat(3,1fr)"></div><div style="display:flex;gap:.5rem;align-items:center;margin-top:.4rem"><small id="suggMsg" style="color:var(--muted)"></small><button class="btn btn-ghost btn-sm" id="suggRef" type="button">↻ More</button></div><small style="color:var(--muted)">Free web photos for preview — verify usage rights before commercial use.</small>'
       + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem"><div><label>Category</label><select id="f_cat">' + d.categories.map(function (c) { return '<option value="' + c.id + '"' + (p.cat === c.id ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('') + '</select></div><div><label>Type</label><select id="f_type"><option value="physical"' + (p.type === 'physical' ? ' selected' : '') + '>Physical (ships)</option><option value="digital"' + (p.type === 'digital' ? ' selected' : '') + '>Digital (WhatsApp delivery)</option></select></div></div>'
       + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem"><div><label>Price ₹ *</label><input id="f_price" type="number" value="' + p.price + '"></div><div><label>MRP ₹</label><input id="f_mrp" type="number" value="' + (p.mrp || '') + '"></div><div><label>Stock</label><input id="f_stock" type="number" value="' + p.stock + '"></div></div>'
       + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem"><div><label>SKU</label><input id="f_sku" value="' + esc(p.sku || '') + '"></div><div><label>Rating</label><input id="f_rate" type="number" step="0.1" min="1" max="5" value="' + (p.rating || 4.5) + '"></div><div><label>Badge</label><select id="f_badge"><option value="">—</option>' + ['NEW', 'SALE', 'BESTSELLER', 'HOT'].map(function (b) { return '<option' + (p.badge === b ? ' selected' : '') + '>' + b + '</option>'; }).join('') + '</select></div></div>'
@@ -146,6 +147,27 @@
       + '<div style="display:flex;gap:.5rem;margin-top:1rem"><button class="btn btn-navy" id="fsave">Save product</button><button class="btn btn-ghost" id="fcancel">Cancel</button></div>'
       + '<p style="font-size:.72rem;color:var(--muted);margin-top:.5rem" id="upnote"></p><div style="display:flex;gap:.5rem"><input id="f_url" class="inp" placeholder="Paste image URL + Add" style="flex:1"><button class="btn btn-ghost btn-sm" id="f_addurl">Add</button></div>';
     drawImgs();
+    var suggBase = 0, suggT = null;
+    function suggKeys() {
+      var stop = { the: 1, a: 1, an: 1, for: 1, with: 1, and: 1, of: 1, pack: 1, set: 1, new: 1, pro: 1, plus: 1, mini: 1 };
+      var words = ($('#f_name').value || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(function (w) { return w.length > 2 && !stop[w]; }).slice(0, 2);
+      if (!words.length) { var cn = ''; d.categories.forEach(function (c) { if (c.id === $('#f_cat').value) cn = c.name; }); words = cn.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(function (w) { return w.length > 2; }).slice(0, 1); }
+      if (!words.length) words = ['product'];
+      return words.join(',');
+    }
+    function drawSugg() {
+      var box = $('#sugg'); if (!box) return;
+      if ((($('#f_name').value || '').trim().length) < 3) { box.innerHTML = '<small style="color:var(--muted)">Type at least 3 letters of the product name…</small>'; var m0 = $('#suggMsg'); if (m0) m0.textContent = ''; return; }
+      var kw = encodeURIComponent(suggKeys()), h = '';
+      for (var i = 1; i <= 6; i++) { var L = suggBase + i; h += '<div class="pimg" data-full="https://loremflickr.com/800/800/' + kw + '?lock=' + L + '" title="Click to add"><img loading="lazy" src="https://loremflickr.com/200/200/' + kw + '?lock=' + L + '"><button>+ Add</button></div>'; }
+      box.innerHTML = h;
+      var m = $('#suggMsg'); if (m) m.textContent = 'Photos for "' + suggKeys().replace(/,/g, ' ') + '"';
+      box.querySelectorAll('[data-full]').forEach(function (el) { el.onclick = function () { tmpImgs.push(el.getAttribute('data-full')); drawImgs(); toast('Suggestion added ✓ (★ for cover)'); }; });
+    }
+    $('#f_name').oninput = function () { clearTimeout(suggT); suggT = setTimeout(drawSugg, 500); };
+    $('#suggRef').onclick = function () { suggBase += 6; drawSugg(); };
+    $('#f_cat').onchange = function () { drawSugg(); };
+    drawSugg();
     $('#upnote').textContent = DB.load().settings.imgbbKey ? '✓ imgbb connected — uploads go to imgbb URL (no browser storage used).' : 'No imgbb key — uploads stored as compressed base64 in browser. Add imgbb key in Settings for URL hosting.';
     $('#f_imgs').onchange = function (e) {
       var files = Array.prototype.slice.call(e.target.files || []).slice(0, 6);
