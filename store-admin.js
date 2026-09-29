@@ -158,8 +158,13 @@
     function drawSugg() {
       var box = $('#sugg'); if (!box) return;
       if ((($('#f_name').value || '').trim().length) < 3) { box.innerHTML = '<small style="color:var(--muted)">Type at least 3 letters of the product name…</small>'; var m0 = $('#suggMsg'); if (m0) m0.textContent = ''; return; }
-      var kw = encodeURIComponent(suggKeys()), h = '';
-      for (var i = 1; i <= 6; i++) { var L = suggBase + i; h += '<div class="pimg" data-full="https://loremflickr.com/800/800/' + kw + '?lock=' + L + '" title="Click to add"><img loading="lazy" src="https://loremflickr.com/200/200/' + kw + '?lock=' + L + '"><button>+ Add</button></div>'; }
+      var kwRaw = suggKeys().split(','), kw = kwRaw.map(function (w) { return encodeURIComponent(w); }).join(','), slug = kwRaw.join('-').replace(/[^a-z0-9-]/g, '') || 'product', h = '';
+      for (var i = 1; i <= 6; i++) {
+        var L = suggBase + i, seed = slug + '-' + L;
+        var full = 'https://loremflickr.com/800/800/' + kw + '?lock=' + L, thumb = 'https://loremflickr.com/200/200/' + kw + '?lock=' + L;
+        var fbT = 'https://picsum.photos/seed/' + seed + '/200', fbF = 'https://picsum.photos/seed/' + seed + '/800';
+        h += '<div class="pimg" data-full="' + full + '" title="Click to add"><img loading="lazy" src="' + thumb + '" onerror="this.onerror=null;this.src=\'' + fbT + '\';var p=this.closest(\'[data-full]\');if(p)p.setAttribute(\'data-full\',\'' + fbF + '\')"><button>+ Add</button></div>';
+      }
       box.innerHTML = h;
       var m = $('#suggMsg'); if (m) m.textContent = 'Photos for "' + suggKeys().replace(/,/g, ' ') + '"';
       box.querySelectorAll('[data-full]').forEach(function (el) { el.onclick = function () { tmpImgs.push(el.getAttribute('data-full')); drawImgs(); toast('Suggestion added ✓ (★ for cover)'); }; });
