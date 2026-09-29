@@ -73,7 +73,7 @@
     if (_s.logo) { $('#aname').innerHTML = '<img src="' + _s.logo + '" style="width:26px;height:26px;border-radius:8px;object-fit:cover;vertical-align:-7px;margin-right:6px">' + esc(_s.storeName); }
     var rt = $('#roleTag');
     if (rt) rt.textContent = isAdmin() ? 'ADMIN PANEL' : ('VENDOR • ' + vendorName()).toUpperCase();
-    ['navVendors', 'navCoupons', 'navSettings', 'navData'].forEach(function (id) { var n = document.getElementById(id); if (n) n.style.display = isAdmin() ? '' : 'none'; });
+    ['navVendors', 'navCoupons', 'navSettings'].forEach(function (id) { var n = document.getElementById(id); if (n) n.style.display = isAdmin() ? '' : 'none'; });
     if (!isAdmin()) tab = 'products';
     document.querySelectorAll('.side a[data-t]').forEach(function (a) {
       if (a.dataset.t === tab) a.classList.add('on'); else a.classList.remove('on');
@@ -108,7 +108,7 @@
 
   function render() {
     var v = $('#view');
-    if (!isAdmin() && (tab === 'vendors' || tab === 'coupons' || tab === 'settings' || tab === 'data')) tab = 'products';
+    if (!isAdmin() && (tab === 'vendors' || tab === 'coupons' || tab === 'settings')) tab = 'products';
     if (tab === 'dash') return vDash(v);
     if (tab === 'products') return vProds(v);
     if (tab === 'cats') return vCats(v);
@@ -116,7 +116,7 @@
     if (tab === 'vendors' && isAdmin()) return vVendors(v);
     if (tab === 'coupons' && isAdmin()) return vCoupons(v);
     if (tab === 'settings' && isAdmin()) return vSettings(v);
-    if (tab === 'data' && isAdmin()) return vData(v);
+    if (tab === 'data') return vData(v);
     return vProds(v);
   }
 
@@ -160,7 +160,7 @@
         return '<tr><td><div style="display:flex;gap:.6rem;align-items:center"><img src="' + ((p.images && p.images[0]) || '') + '"><div><b>' + esc(p.name) + '</b><br><small>' + esc(p.sku || '') + ' • ★' + (p.rating || '') + '</small></div></div></td><td><small>' + esc((d.categories.find(function (c) { return c.id === p.cat; }) || {}).name || '') + '</small></td><td><small>' + p.type + '</small></td><td><b>' + DB.money(p.price) + '</b><br><small><s>' + DB.money(p.mrp) + '</s></small></td><td>' + esc(p.stock) + '</td>' + (isAdmin() ? '<td><small>' + esc(p.vendorName || DB.vendorName(p.vendorId)) + '</small></td>' : '') + '<td>' + (p.featured ? '⭐' : '—') + '</td><td style="white-space:nowrap"><button class="btn btn-ghost btn-sm" data-e="' + p.id + '">Edit</button> <button class="btn btn-ghost btn-sm" data-x="' + p.id + '">Delete</button></td></tr>';
       }).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--muted)">No products</td></tr>';
       $('#pb').querySelectorAll('[data-e]').forEach(function (b) { b.onclick = function () { openProd(b.dataset.e); }; });
-      $('#pb').querySelectorAll('[data-x]').forEach(function (b) { b.onclick = function () { if (!confirm('Delete product?')) return; var dd = DB.load(); var t = dd.products.filter(function (x) { return x.id === b.dataset.x; })[0]; if (!t) return; if (!isAdmin() && (t.vendorId || 'admin') !== vendorId()) { toast('Not your product'); return; } dd.products = dd.products.filter(function (x) { return x.id !== b.dataset.x; }); DB.save(dd); vProds(v); }; });
+      $('#pb').querySelectorAll('[data-x]').forEach(function (b) { b.onclick = function () { if (!confirm('Delete product?')) return; var dd = DB.load(); var t = dd.products.filter(function (x) { return x.id === b.dataset.x; })[0]; if (!t) return; if (!isAdmin() && (t.vendorId || 'admin') !== vendorId()) { toast('Not your product'); return; } dd.products = dd.products.filter(function (x) { return x.id !== b.dataset.x; }); DB.save(dd); vProds(v); if (!isAdmin()) autoPublish('Product deleted'); }; });
     }
     draw('');
     $('#pq').oninput = function (e) { d = DB.load(); scope = myProducts(d.products); draw(e.target.value); };
@@ -297,7 +297,8 @@
       if (!obj.name) { toast('Name required'); return; }
       if (id) { var ix = dd.products.findIndex(function (x) { return x.id === id; }); if (ix < 0) { toast('Product not found'); return; } if (!isAdmin() && (dd.products[ix].vendorId || 'admin') !== vendorId()) { toast('Not your product'); return; } dd.products[ix] = obj; }
       else dd.products.unshift(obj);
-      DB.save(dd); closeM(); render(); toast('Product saved ✓');
+      DB.save(dd); closeM();
+      if (isAdmin()) { render(); toast('Product saved ✓'); } else autoPublish('Product saved');
     };
     $('#modal').classList.add('show'); $('#ovl').classList.add('show');
   }
@@ -308,6 +309,17 @@
     box.querySelectorAll('[data-star]').forEach(function (b) { b.onclick = function () { var i = +b.dataset.star, s = tmpImgs.splice(i, 1)[0]; tmpImgs.unshift(s); drawImgs(); }; });
   }
   function closeM() { $('#modal').classList.remove('show'); $('#ovl').classList.remove('show'); }
+  function pubSecret() { try { return sessionStorage.getItem('bt_pub') || ''; } catch (e) { return ''; } }
+  // Vendors: every save auto-publishes (no manual button needed).
+  function autoPublish(note) {
+    if (isAdmin()) return;
+    var sec = pubSecret();
+    if (!sec) { toast((note || 'Saved') + ' locally — enter publish secret once in Backup for auto-publish'); return; }
+    toast('Auto-publishing…');
+    DB.publishLive(sec, 'vendor update', true).then(function (r) {
+      toast('Live ✓ (rev ' + (r.rev || '') + ')'); try { render(); } catch (e) {}
+    }).catch(function (err) { toast('Saved locally — auto-publish failed: ' + (err && err.message || err)); });
+  }
 
   function vCats(v) {
     var d = DB.load();
@@ -339,7 +351,8 @@
       if (DB.catExists(nm, id || '')) { toast('Category already exists'); return; }
       if (id) { var o = dd.categories.find(function (x) { return x.id === id; }); if (!o) { toast('Not found'); return; } o.name = nm; o.icon = $('#c_icon').value; o.image = tmpCatImg; o.desc = $('#c_desc').value; }
       else dd.categories.push({ id: DB.uid('c'), name: nm, icon: $('#c_icon').value || '📦', image: tmpCatImg, desc: $('#c_desc').value });
-      DB.save(dd); closeM(); render(); toast('Category saved ✓');
+      DB.save(dd); closeM();
+      if (isAdmin()) { render(); toast('Category saved ✓'); } else autoPublish('Category saved');
     };
     $('#modal').classList.add('show'); $('#ovl').classList.add('show');
   }
@@ -461,17 +474,18 @@
   }
 
   function vData(v) {
+    var vend = !isAdmin();
     var raw = localStorage.getItem(DB.KEY) || '';
     var kb = Math.round((raw.length / 1024));
     var myRev = 0; try { myRev = DB.load().rev || 0; } catch (e) {}
     v.innerHTML = '<h1 style="font-family:var(--font-h)">Backup & data</h1>'
-      + '<div class="form" style="background:#fff;border:1px solid var(--line);border-radius:16px;padding:1.2rem;max-width:640px;margin-bottom:.8rem"><h3 style="font-family:var(--font-h)">Publish to live website</h3><p style="font-size:.78rem;color:var(--muted)">Pushes this browser data to GitHub (<b>data/store.json</b>) so every visitor sees it. Needs one-time server setup (see below). Local rev <b>' + myRev + '</b> • Live rev <b id="liveRev">…</b></p>'
+      + '<div class="form" style="background:#fff;border:1px solid var(--line);border-radius:16px;padding:1.2rem;max-width:640px;margin-bottom:.8rem"><h3 style="font-family:var(--font-h)">Publish to live website</h3><p style="font-size:.78rem;color:var(--muted)">Pushes this browser data to GitHub (<b>data/store.json</b>) so every visitor sees it.' + (vend ? ' Your product saves <b>auto-publish</b> once the secret below is entered.' : ' Needs one-time server setup (see below).') + ' Local rev <b>' + myRev + '</b> • Live rev <b id="liveRev">…</b></p>'
       + '<label>Publish secret</label><input id="p_sec" type="password" placeholder="PUBLISH_SECRET from Vercel env">'
       + '<div style="display:flex;gap:.5rem;margin-top:.8rem;flex-wrap:wrap"><button class="btn btn-navy btn-sm" id="ppub">Publish now</button><button class="btn btn-ghost btn-sm" id="pchk">Check live version</button></div><div id="p_stat" style="font-size:.78rem;margin-top:.5rem"></div></div>'
-      + '<div class="stat-grid"><div class="stat"><b>' + kb + ' KB</b><small>Storage used (~5MB limit)</small></div></div>'
+      + (vend ? '' : '<div class="stat-grid"><div class="stat"><b>' + kb + ' KB</b><small>Storage used (~5MB limit)</small></div></div>'
       + '<div style="display:flex;gap:.5rem;flex-wrap:wrap"><button class="btn btn-navy btn-sm" id="dexp">Export JSON backup</button><button class="btn btn-ghost btn-sm" id="dimp">Import JSON</button><button class="btn btn-ghost btn-sm" id="dreset">Reset demo data</button><button class="btn btn-ghost btn-sm" id="dwip" style="border-color:#dc2626;color:#dc2626">Delete everything</button></div>'
-      + '<input type="file" id="dfile" accept=".json" style="display:none"><p style="font-size:.78rem;color:var(--muted);margin-top:.8rem">One-time server setup: Vercel project → Settings → Environment Variables → add <b>GITHUB_TOKEN</b> (classic token, <b>repo</b> scope), <b>GITHUB_REPO</b> (owner/repo), <b>GITHUB_PATH</b> (repo path of data file, e.g. data/store.json), <b>PUBLISH_SECRET</b> (any strong password) → Redeploy. Then type that secret above and Publish. Last publish wins if two people edit at once.</p>';
-    try { var ps = sessionStorage.getItem('bt_pub') || ''; if (ps) $('#p_sec').value = ps; } catch (e) {}
+      + '<input type="file" id="dfile" accept=".json" style="display:none"><p style="font-size:.78rem;color:var(--muted);margin-top:.8rem">One-time server setup: Vercel project → Settings → Environment Variables → add <b>GITHUB_TOKEN</b> (classic token, <b>repo</b> scope), <b>GITHUB_REPO</b> (owner/repo), <b>GITHUB_PATH</b> (repo path of data file, e.g. data/store.json), <b>PUBLISH_SECRET</b> (any strong password) → Redeploy. Then type that secret above and Publish. Last publish wins if two people edit at once.</p>');
+    try { var ps = pubSecret(); if (ps) $('#p_sec').value = ps; } catch (e) {}
     function liveRev() { DB.fetchLive().then(function (live) { var el = $('#liveRev'); if (el) el.textContent = (live.rev || 0); }).catch(function () { var el2 = $('#liveRev'); if (el2) el2.textContent = 'unreachable'; }); }
     liveRev();
     $('#pchk').onclick = liveRev;
@@ -480,11 +494,12 @@
       if (!sec) { toast('Enter publish secret'); return; }
       try { sessionStorage.setItem('bt_pub', sec); } catch (e) {}
       $('#p_stat').textContent = 'Publishing to GitHub…';
-      DB.publishLive(sec, 'store update from admin').then(function (r) {
+      DB.publishLive(sec, isAdmin() ? 'store update from admin' : 'store update from vendor', !isAdmin()).then(function (r) {
         $('#p_stat').textContent = '✓ Published! Live rev ' + (r.rev || '') + ' — visitors get it on next load.';
         toast('Published live ✓'); liveRev();
       }).catch(function (err) { $('#p_stat').textContent = '✕ Publish failed: ' + (err && err.message || err); });
     };
+    if (vend) return;
     $('#dexp').onclick = function () { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([localStorage.getItem(DB.KEY)], { type: 'application/json' })); a.download = 'store-backup.json'; a.click(); };
     $('#dimp').onclick = function () { $('#dfile').click(); };
     $('#dfile').onchange = function (e) { var f = e.target.files[0]; if (!f) return; var r = new FileReader(); r.onload = function () { try { var d = JSON.parse(r.result); if (!d.products || !d.settings || !d.categories) throw 0; if (!Array.isArray(d.vendors)) d.vendors = []; if (!Array.isArray(d.coupons)) d.coupons = []; if (!Array.isArray(d.orders)) d.orders = []; DB.save(d); toast('Imported ✓'); render(); } catch (err) { toast('Invalid backup file'); } }; r.readAsText(f); };
